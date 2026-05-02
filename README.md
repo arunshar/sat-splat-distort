@@ -25,6 +25,23 @@ bash scripts/download_dfc2019.sh         # ~10 GB
 python -m sat_splat.training.train +experiment=dfc2019_jax_001
 ```
 
+## Smoke tests
+
+The repo ships with two test suites that run on CPU in under 15 seconds:
+
+```bash
+uv venv --python 3.11 .venv && source .venv/bin/activate
+uv pip install -e ".[dev,space]"
+pytest                                    # 7 + 13 = 20 tests
+python /tmp/launch_smoke.py "$(pwd)" space/app.py   # boots Gradio on a real port
+```
+
+Verified status (CPU smoke):
+- 7/7 camera Jacobian tests vs `torch.autograd` (RPC, pushbroom, equidistant fisheye, equirectangular).
+- 13/13 Space smoke tests (imports, distortion-grid forward, UI build, callback shape, requirements.txt parseable, HF README frontmatter).
+- Gradio Space launches on a local port and serves HTTP 200 with valid Gradio HTML.
+- `space/requirements.txt` resolves cleanly (61 packages).
+
 ## Try the live demo
 
 Drop satellite stereo pairs (or pick a prebuilt AOI) at the [HF Space](https://huggingface.co/spaces/arun08sharma/sat-splat-distort). Reconstructs in under 2 minutes on a 1xA100 backend.

@@ -105,7 +105,7 @@ def _stats(pipeline, view_paths) -> str:
 
 
 def build_ui() -> gr.Blocks:
-    with gr.Blocks(title="Sat-Splat-Distort", theme=gr.themes.Soft()) as demo:
+    with gr.Blocks(title="Sat-Splat-Distort") as demo:
         gr.Markdown(
             "# Sat-Splat-Distort\n"
             "Distortion-aware 3D Gaussian Splatting from multi-view satellite imagery.\n"
@@ -137,4 +137,4 @@ def build_ui() -> gr.Blocks:
 
 
 if __name__ == "__main__":
-    build_ui().launch()
+    build_ui().launch(theme=gr.themes.Soft())

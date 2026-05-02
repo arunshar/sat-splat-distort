@@ -1,0 +1,21 @@
+defaults:
+  - default
+  - _self_
+
+image_hw: [1024, 2048]
+
+dataset:
+  kind: matterport360
+  root: data/matterport3d
+  scene: 17DRP5sb8fy
+  image_hw: [1024, 2048]
+
+camera:
+  kind: equirect
+  kwargs:
+    width: 2048
+    height: 1024
+
+train:
+  epochs: 50
+  out_dir: outputs/matterport_17DRP5sb8fy

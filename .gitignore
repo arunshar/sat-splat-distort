@@ -1,0 +1,36 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Data and weights
+data/
+checkpoints/
+outputs/
+*.ply
+*.npz
+*.pt
+!tests/fixtures/*.pt
+
+# Logs
+wandb/
+runs/
+*.log
+
+# Environments
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store

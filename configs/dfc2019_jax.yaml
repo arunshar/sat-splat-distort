@@ -1,0 +1,16 @@
+defaults:
+  - default
+  - _self_
+
+dataset:
+  site: JAX
+
+camera:
+  kind: rpc
+
+distortion_grid:
+  enabled: true
+
+train:
+  epochs: 30
+  out_dir: outputs/dfc2019_jax

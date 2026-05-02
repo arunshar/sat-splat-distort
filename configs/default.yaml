@@ -1,0 +1,33 @@
+defaults:
+  - _self_
+
+device: cuda
+image_hw: [1024, 1024]
+
+dataset:
+  kind: dfc2019           # one of {dfc2019, matterport360, kitti360_fisheye}
+  root: data/dfc2019
+  site: JAX
+  split: train
+  workers: 4
+
+camera:
+  kind: rpc               # dispatched via sat_splat.cameras.from_name
+  kwargs: {}
+
+distortion_grid:
+  enabled: true
+  h: 64
+  w: 64
+  dim: 16
+  reg_weight: 1.0e-5
+
+train:
+  epochs: 30
+  lr: 1.0e-3
+  num_points: 200000
+  out_dir: outputs/dfc2019_jax_001
+
+logging:
+  wandb: true
+  every: 50

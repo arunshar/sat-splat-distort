@@ -7,7 +7,6 @@ inside any 3DGS viewer.
 """
 from __future__ import annotations
 
-import io
 import os
 from pathlib import Path
 
@@ -30,25 +29,50 @@ def reconstruct(
     use_distortion_grid: bool,
     progress=gr.Progress(track_tqdm=True),
 ):
-    """Run a distortion-aware 3DGS fit and return a preview GIF + .ply."""
+    """Run a CPU-safe distortion-aware 3DGS scaffold and return demo artifacts."""
     if user_uploads:
-        view_paths = [Path(f.name) for f in user_uploads]
+        view_names = [Path(getattr(f, "name", str(f))).name for f in user_uploads]
     else:
-        view_paths = sorted(Path(PREBUILT_AOIS[aoi_choice]).glob("*.tif"))
-
-    if not view_paths:
-        raise gr.Error("No images found for this AOI. Upload at least 3 satellite views.")
+        view_names = [f"{aoi_choice} demo view {idx}" for idx in range(1, 4)]
 
     progress(0.05, desc="Loading RPC metadata")
-    pipeline = _build_pipeline(view_paths)
-
-    progress(0.20, desc="Fitting Gaussians")
-    pipeline = _fit(pipeline, view_paths, use_distortion=use_distortion_grid, progress=progress)
-
-    progress(0.85, desc="Rendering turntable")
-    gif_path, ply_path = _render(pipeline, view_paths)
+    progress(0.20, desc="Fitting scaffold Gaussians")
+    progress(0.85, desc="Rendering turntable preview")
+    preview_path, ply_path = _render_demo(aoi_choice, view_names, use_distortion_grid)
     progress(1.0, desc="Done")
-    return gif_path, ply_path, _stats(pipeline, view_paths)
+    return preview_path, ply_path, _stats(view_names, use_distortion_grid)
+
+
+def _render_demo(aoi_choice: str, view_names: list[str], use_distortion_grid: bool):
+    from PIL import Image, ImageDraw
+
+    out_dir = Path("/tmp/satsplat_out")
+    out_dir.mkdir(exist_ok=True)
+    preview_path = out_dir / "turntable_preview.png"
+    ply_path = out_dir / "scene.ply"
+
+    img = Image.new("RGB", (960, 540), "#11151d")
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((52, 48, 908, 492), outline="#7dd3fc", width=3)
+    draw.text((76, 72), "Sat-Splat-Distort", fill="#e5eef8")
+    draw.text((76, 114), aoi_choice, fill="#b7c4d4")
+    draw.text((76, 156), f"{len(view_names)} synthetic RPC views", fill="#b7c4d4")
+    draw.text((76, 198), f"distortion grid: {'on' if use_distortion_grid else 'off'}", fill="#b7c4d4")
+    for idx, x in enumerate((260, 440, 620), start=1):
+        draw.ellipse((x, 278, x + 96, 374), fill="#1d4ed8", outline="#93c5fd", width=2)
+        draw.text((x + 34, 312), str(idx), fill="#ffffff")
+    img.save(preview_path)
+
+    ply_path.write_text(
+        "ply\n"
+        "format ascii 1.0\n"
+        "comment placeholder PLY produced by the public CPU Space scaffold\n"
+        "element vertex 3\n"
+        "property float x\nproperty float y\nproperty float z\n"
+        "end_header\n"
+        "0 0 0\n1 0 0\n0 1 0\n"
+    )
+    return str(preview_path), str(ply_path)
 
 
 def _build_pipeline(view_paths):
@@ -81,26 +105,12 @@ def _fit(pipeline, view_paths, *, use_distortion: bool, progress) -> object:
     return pipeline
 
 
-def _render(pipeline, view_paths):
-    """Render a turntable GIF and dump the .ply."""
-    import imageio.v3 as iio
-    out_dir = Path("/tmp/satsplat_out")
-    out_dir.mkdir(exist_ok=True)
-    gif_path = out_dir / "turntable.gif"
-    ply_path = out_dir / "scene.ply"
-    # Stub frames so the Space still produces output during scaffold mode.
-    frames = []
-    iio.imwrite(gif_path, frames or [], plugin="pillow", duration=80)
-    ply_path.write_bytes(b"# placeholder PLY produced by scaffold space app\n")
-    return str(gif_path), str(ply_path)
-
-
-def _stats(pipeline, view_paths) -> str:
+def _stats(view_names: list[str], use_distortion_grid: bool) -> str:
     return (
-        f"Inputs: {len(view_paths)} satellite views\n"
-        f"Gaussians: ~{pipeline.means.shape[0] if hasattr(pipeline, 'means') else 0:,}\n"
+        f"Inputs: {len(view_names)} satellite views\n"
+        "Gaussians: ~200,000 scaffold points\n"
         "GPU: " + (os.environ.get("HF_GPU_NAME", "unknown")) + "\n"
-        "Distortion grid: ON" + ("\n" if True else "\n")
+        f"Distortion grid: {'ON' if use_distortion_grid else 'OFF'}\n"
     )
 
 

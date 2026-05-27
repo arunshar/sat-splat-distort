@@ -131,17 +131,18 @@ def test_space_app_constants_present():
     assert len(module.PREBUILT_AOIS) >= 3
 
 
-def test_space_callback_does_not_crash_on_missing_inputs():
-    """If neither uploads nor a valid AOI exists, we expect a gr.Error (graceful)."""
+def test_space_callback_returns_demo_artifacts_on_missing_inputs():
+    """The public Space returns CPU-safe demo artifacts without uploaded GeoTIFFs."""
     pytest.importorskip("gradio")
     module = _load_app_module()
-    with pytest.raises(Exception):
-        # Empty upload list + an AOI that has no images on disk -> gr.Error.
-        module.reconstruct(
-            list(module.PREBUILT_AOIS)[0],
-            None,
-            False,
-        )
+    preview, ply, stats = module.reconstruct(
+        list(module.PREBUILT_AOIS)[0],
+        None,
+        False,
+    )
+    assert Path(preview).exists()
+    assert Path(ply).exists()
+    assert "Distortion grid: OFF" in stats
 
 
 # -- requirements.txt parses --------------------------------------------------

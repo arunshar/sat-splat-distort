@@ -130,7 +130,7 @@ def build_ui() -> gr.Blocks:
         )
         gr.Markdown(
             "[Code](https://github.com/arunshar/sat-splat-distort) "
-            "| [Model card](https://huggingface.co/arun08sharma/satsplat-distort-dfc2019) "
+            "| [Space](https://huggingface.co/spaces/Arun0808/sat-splat-distort) "
             "| [Paper draft (CVPR EarthVision 2027)](paper/main.pdf)"
         )
     return demo

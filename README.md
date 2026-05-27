@@ -2,8 +2,8 @@
 
 > Distortion-aware 3D Gaussian Splatting for satellite RPC, pushbroom, fisheye, and 360 equirectangular cameras, in one differentiable rasterizer.
 
-[![HF Space](https://img.shields.io/badge/%F0%9F%A4%97-HF%20Space-yellow)](https://huggingface.co/spaces/arun08sharma/sat-splat-distort)
-[![HF Model](https://img.shields.io/badge/%F0%9F%A4%97-Model%20Card-blue)](https://huggingface.co/arun08sharma/satsplat-distort-dfc2019)
+[![HF Space](https://img.shields.io/badge/%F0%9F%A4%97-HF%20Space-yellow)](https://huggingface.co/spaces/Arun0808/sat-splat-distort)
+![Model checkpoint scaffold](https://img.shields.io/badge/model-checkpoint%20scaffold-blue)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 3D Gaussian Splatting (3DGS) was designed for the perspective pinhole camera. Real-world remote sensing and immersive imagery (satellite RPC, pushbroom scanners, fisheye lenses, 360 panoramas) violate this assumption. Existing fixes either undistort first (which loses fidelity at the periphery) or hand-roll a per-camera approximation. Sat-Splat-Distort replaces the affine EWA splatting Jacobian with a closed-form distortion-aware Jacobian dispatched per camera model, plus a learned distortion-prior token grid for residual error.
@@ -44,7 +44,7 @@ Verified status (CPU smoke):
 
 ## Try the live demo
 
-Drop satellite stereo pairs (or pick a prebuilt AOI) at the [HF Space](https://huggingface.co/spaces/arun08sharma/sat-splat-distort). Reconstructs in under 2 minutes on a 1xA100 backend.
+Drop satellite stereo pairs (or pick a prebuilt AOI) at the [HF Space](https://huggingface.co/spaces/Arun0808/sat-splat-distort). The public Space boots the Gradio workflow and keeps the heavy 3DGS fit stubbed for CPU smoke.
 
 ## Method
 
@@ -92,7 +92,7 @@ DFC2019 Track-3 (held-out views):
 
 ```bash
 python -m sat_splat.eval.dfc2019_bench \
-  --checkpoint hf://arun08sharma/satsplat-distort-dfc2019 \
+  --checkpoint hf://Arun0808/satsplat-distort-dfc2019 \
   --metric psnr ssim lpips
 ```
 

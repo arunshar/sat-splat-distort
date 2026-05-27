@@ -1,8 +1,2 @@
 gradio>=4.40
 torch>=2.3
-torchvision>=0.18
-numpy>=1.26
-rasterio>=1.3
-imageio>=2.34
-huggingface_hub>=0.24
-sat_splat @ git+https://github.com/arunshar/sat-splat-distort@main

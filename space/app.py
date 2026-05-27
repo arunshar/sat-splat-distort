@@ -137,4 +137,4 @@ def build_ui() -> gr.Blocks:
 
 
 if __name__ == "__main__":
-    build_ui().launch(theme=gr.themes.Soft())
+    build_ui().launch(server_name="0.0.0.0")

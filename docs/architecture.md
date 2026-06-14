@@ -5,6 +5,11 @@ This note derives the closed-form 2x3 Jacobians for each camera model in
 distortion-prior grid head. The derivations are duplicated in code as
 docstrings so the implementation file is self-contained.
 
+Implementation status: the per-camera Jacobians and the distortion-prior grid
+described below are implemented in PyTorch and unit-tested on CPU. The CUDA
+rasterizer fork described in the final section is a plan, not yet implemented;
+no `cuda_rasterizer/` or `sat_splat._cuda_rasterizer` exists in this repo.
+
 ## EWA splatting refresher
 
 3DGS approximates the projected covariance of a 3D Gaussian as

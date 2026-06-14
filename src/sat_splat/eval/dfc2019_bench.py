@@ -1,4 +1,11 @@
-"""Reproduce DFC2019 leaderboard numbers for held-out novel-view synthesis."""
+"""Eval skeleton for DFC2019 held-out novel-view synthesis.
+
+NOT yet runnable end to end: this imports ``sat_splat.data`` (DFC2019Dataset),
+which does not exist, and renders through ``SatSplatPipeline``, whose CUDA
+rasterizer is not built. It documents the intended benchmark call graph; it
+will raise ImportError / RuntimeError as written. No numbers have been produced
+from this script.
+"""
 from __future__ import annotations
 
 import argparse
@@ -21,7 +28,9 @@ def psnr(a: torch.Tensor, b: torch.Tensor) -> float:
 
 
 def ssim(a: torch.Tensor, b: torch.Tensor) -> float:
-    # Light-weight SSIM stand-in to keep this skeleton dependency-free.
+    # NOTE: crude global-statistic proxy, NOT windowed SSIM (no sliding 11x11
+    # Gaussian window); kept dependency-free for the skeleton. Do not report this
+    # as SSIM; swap in a windowed implementation before any benchmark.
     mu_a, mu_b = a.mean(), b.mean()
     va, vb = a.var(), b.var()
     cv = ((a - mu_a) * (b - mu_b)).mean()

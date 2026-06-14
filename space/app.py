@@ -1,9 +1,10 @@
 """Gradio HF Space entry point for sat-splat-distort.
 
-The space lets a recruiter drop in 3-7 satellite views of a city block and
-get a photoreal 3D model in their browser. We render a turn-table preview to
-GIF for snappy preview, plus expose a downloadable .ply for orbit fly-through
-inside any 3DGS viewer.
+STATUS: CPU placeholder demo only. ``reconstruct`` does NOT run a real 3DGS fit.
+It returns a drawn preview image and a 3-vertex placeholder .ply so the Space
+boots on CPU. The real reconstruction path (``_build_pipeline`` / ``_fit``)
+imports ``sat_splat.data`` and needs the CUDA rasterizer, neither of which
+exists, so it is never invoked here.
 """
 from __future__ import annotations
 
@@ -76,7 +77,9 @@ def _render_demo(aoi_choice: str, view_names: list[str], use_distortion_grid: bo
 
 
 def _build_pipeline(view_paths):
-    """Lazy import so the Space cold-starts in <5 s."""
+    """Intended real-fit helper. NOT reachable from the public Space: it imports
+    ``sat_splat.data.dfc2019`` (which does not exist) and builds a pipeline whose
+    ``render`` needs the unbuilt CUDA rasterizer. Kept as a scaffold reference."""
     from sat_splat.cameras.rpc import RPCCamera
     from sat_splat.data.dfc2019 import DFC2019Dataset  # for RPC parsing utilities
     from sat_splat.models import DistortionPriorGrid, SatSplatPipeline

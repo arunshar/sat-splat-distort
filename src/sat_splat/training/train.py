@@ -5,8 +5,15 @@ Usage:
     python -m sat_splat.training.train +experiment=dfc2019_jax_001
 
 Configs live under configs/. The training loop fits a per-scene SplatScene +
-DistortionPriorGrid with the standard L1+SSIM loss and a covariance-smoothness
+DistortionPriorGrid with an L1 + (proxy-)SSIM loss and a covariance-smoothness
 regularizer. Logs go to W&B under project ``sat-splat-distort``.
+
+STATUS: scaffold, NOT runnable end to end. ``make_loader`` imports
+``sat_splat.data`` (DFC2019Dataset / Matterport360Dataset), which does not
+exist, and ``pipeline.render`` requires the CUDA rasterizer
+(``sat_splat._cuda_rasterizer``), which is not built. This file documents the
+intended call graph and will crash as written. The SSIM term below is a crude
+global-statistic proxy, not windowed SSIM.
 """
 from __future__ import annotations
 
@@ -49,8 +56,10 @@ def init_scene(num_points: int, device, dtype) -> "SplatScene":
 
 def l1_ssim_loss(pred: torch.Tensor, target: torch.Tensor, alpha: float = 0.85) -> torch.Tensor:
     l1 = (pred - target).abs().mean()
-    # Crude SSIM stand-in for the skeleton; replace with kornia.metrics.ssim
-    # in production training.
+    # NOTE: crude global-statistic proxy, NOT windowed SSIM. It uses whole-image
+    # means/variances/covariance rather than a sliding 11x11 Gaussian window, so it
+    # does not match real SSIM. Placeholder only; replace with kornia.metrics.ssim
+    # (windowed) before reporting any number.
     mu_pred = pred.mean()
     mu_t = target.mean()
     var_pred = pred.var()

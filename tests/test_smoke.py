@@ -111,6 +111,7 @@ def test_fisheye_pipeline_e2e():
 
 def test_space_app_module_importable():
     """Importing space/app.py must not crash (lazy imports inside callbacks)."""
+    pytest.importorskip("gradio")
     module = _load_app_module()
     assert hasattr(module, "build_ui")
     assert hasattr(module, "reconstruct")
@@ -126,6 +127,7 @@ def test_space_ui_builds():
 
 def test_space_app_constants_present():
     """The prebuilt-AOI mapping is non-empty."""
+    pytest.importorskip("gradio")
     module = _load_app_module()
     assert isinstance(module.PREBUILT_AOIS, dict)
     assert len(module.PREBUILT_AOIS) >= 3

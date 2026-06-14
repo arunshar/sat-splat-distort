@@ -8,8 +8,8 @@ dist/
 .mypy_cache/
 .ruff_cache/
 
-# Data and weights
-data/
+# Data and weights (top-level only; do not ignore the src/sat_splat/data package)
+/data/
 checkpoints/
 outputs/
 *.ply

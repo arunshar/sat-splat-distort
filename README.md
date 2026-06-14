@@ -10,22 +10,23 @@
 
 ## Status: what is real vs. what is scaffold
 
-This repository is an early research scaffold. The geometric core is implemented and unit-tested on CPU; the end-to-end training and rendering stack is not yet wired. Read this section before cloning with any expectation of reproducing a result.
+This repository is an early research scaffold. The geometric core is implemented and unit-tested on CPU, and a portable PyTorch rasterizer now renders, trains, and benches on synthetic data end to end; the optimized CUDA fork and the real-data loaders are still unbuilt. Read this section before cloning with any expectation of reproducing a real-dataset result.
 
 **Real and tested (runs on CPU today):**
 
 - Four per-camera closed-form analytic projection Jacobians: RPC (satellite), pushbroom, equidistant fisheye, and equirectangular 360, in `src/sat_splat/cameras/`. Each `project()` and `jacobian()` is implemented in plain PyTorch.
 - A learned distortion-prior grid (`src/sat_splat/models/distortion_grid.py`): a 64x64x16 latent token field, bilinearly sampled at the projected pixel and passed through a 3-layer MLP to emit a symmetric 2x2 covariance perturbation.
-- 20 unit tests pass on CPU. Of these, 7 validate the analytic camera Jacobians elementwise against `torch.autograd` (`tests/test_cameras.py`), and 13 are scaffold/Space smoke tests (imports, distortion-grid forward shape + symmetry + PSD, Gradio UI build, demo-artifact callback on synthetic inputs) in `tests/test_smoke.py`.
+- A portable differentiable rasterizer (`src/sat_splat/models/torch_rasterizer.py`): pure-PyTorch EWA splatting that projects each 3D covariance through the per-camera analytic Jacobian, adds the learned distortion perturbation, and alpha-composites front-to-back. `SatSplatPipeline.render()` uses it by default (`backend="torch"`), so render / train / bench run on CPU with no CUDA build. A synthetic data layer (`src/sat_splat/data/`) and a self-contained fit (`src/sat_splat/training/fit.py`) demonstrate end-to-end training: fitting a fresh Gaussian field to a rendered target lifts image PSNR from 7.5 to 19.2 dB in 120 CPU steps. These are SYNTHETIC fits, not a DFC2019 / Matterport benchmark.
+- 26 unit tests pass on CPU: 7 validate the analytic camera Jacobians elementwise against `torch.autograd` (`tests/test_cameras.py`), 6 cover the rasterizer (render shape, differentiability, distortion perturbation, and the synthetic fit) in `tests/test_rasterizer.py`, and 13 are scaffold/Space smoke tests in `tests/test_smoke.py`.
 
 **Scaffold / stub / not yet implemented (cannot run end to end):**
 
-- The unified differentiable CUDA rasterizer (`sat_splat._cuda_rasterizer`) **does not exist**. `SatSplatPipeline.render()` raises `RuntimeError` on first call because there is no built CUDA extension to load. There is no `cuda_rasterizer/` directory.
-- The data layer **does not exist**. There is no `sat_splat.data` module, so `DFC2019Dataset` and `Matterport360Dataset` cannot be imported.
-- Because of the two gaps above, `python -m sat_splat.training.train ...`, `python -m sat_splat.eval.dfc2019_bench ...`, and the Space "reconstruct" path **cannot run end to end**. `train.py` and `dfc2019_bench.py` are reference skeletons that show the intended call graph; they will crash on import of `sat_splat.data` or on the missing rasterizer.
+- The optimized CUDA rasterizer fork (`sat_splat._cuda_rasterizer`) **is not built** (there is no `cuda_rasterizer/` directory). It is an optional fast path: `SatSplatPipeline.render(backend="cuda")` raises `RuntimeError` asking you to build it, while the default `backend="torch"` uses the portable rasterizer above and runs without it.
+- The real-data loaders **do not exist**. `sat_splat.data` ships only a synthetic scene/target generator; `DFC2019Dataset` and `Matterport360Dataset` (real satellite stereo / 360 panoramas) are not implemented.
+- The synthetic fit runs end to end on CPU (see "What you can run today"). The Hydra `train.py` and `dfc2019_bench.py` real-data paths still need the missing loaders, and the Space "reconstruct" path is a placeholder; those remain reference skeletons for the real-data call graph.
 - The Gradio Space serves a CPU-safe placeholder (a drawn preview image and a 3-vertex placeholder `.ply`); it does not fit a real scene.
 
-No benchmark has been run. No checkpoint has been published. The metrics table below is a set of unmeasured targets, not results.
+No real-dataset benchmark has been run and no checkpoint published; the metrics table below is a set of unmeasured targets, not results. The only measured numbers are the synthetic fit's PSNR (above).
 
 ## What you can run today
 
@@ -33,7 +34,10 @@ No benchmark has been run. No checkpoint has been published. The metrics table b
 git clone https://github.com/arunshar/sat-splat-distort
 cd sat-splat-distort
 pip install -e ".[dev]"
-pytest                       # 20 tests on CPU (7 Jacobian-vs-autograd + 13 scaffold/Space smoke)
+pytest                       # 26 tests on CPU (7 Jacobian-vs-autograd + 6 rasterizer + 13 scaffold/Space smoke)
+
+# render + train a synthetic fit end to end (no CUDA, no data, ~10s on CPU):
+python -c "from sat_splat.training.fit import fit_synthetic; print(fit_synthetic())"
 ```
 
 The camera Jacobian tests are the meaningful check: they confirm each closed-form 2x3 Jacobian matches `torch.autograd` on random points in the model's operating region.

@@ -68,15 +68,20 @@ class SatSplatPipeline(nn.Module):
 
     # -- forward ----------------------------------------------------------------
 
-    def render(self, *, with_distortion: bool = True) -> Tensor:
+    def render(self, *, with_distortion: bool = True, backend: str = "torch") -> Tensor:
         """Render the scene under the configured camera.
 
-        Loads the CUDA rasterizer fork on first call. The Jacobian and
-        distortion-grid perturbation are passed in to the rasterizer's
-        ``computeCov2D`` replacement so 2D covariances are computed correctly
-        for the camera model.
+        ``backend="torch"`` (default) uses the portable reference rasterizer in
+        ``sat_splat.models.torch_rasterizer`` and runs on CPU/GPU with no build
+        step. ``backend="cuda"`` loads the optimized CUDA fork on first call.
+        Either way the per-camera analytic Jacobian and the distortion-grid
+        perturbation are passed in so 2D covariances are computed correctly for
+        the camera model.
         """
-        rasterizer = self._lazy_rasterizer()
+        if backend == "cuda":
+            rasterizer = self._lazy_rasterizer()
+        else:
+            from sat_splat.models.torch_rasterizer import distortion_aware_rasterize as rasterizer
         uv = self.camera.project(self.means)
         J = self.camera.jacobian(self.means)
         if with_distortion:

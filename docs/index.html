@@ -6,7 +6,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#fbfcfe;--panel:#fff;--ink:#16202c;--mut:#5b6776;--line:#e6eaf0;--acc:#2257d6;--acc2:#0e9f6e;--warn:#b45309;--chip:#eef2f9;--code:#f3f5f9}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1116;--panel:#161b22;--ink:#e7ecf3;--mut:#9aa6b4;--line:#252c37;--acc:#6ea8fe;--acc2:#54d6a0;--warn:#ffb454;--chip:#1b212b;--code:#11151b}}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.65;font-size:16px}
 h1,h2,h3{font-family:Montserrat,system-ui,sans-serif}
@@ -54,28 +53,21 @@ footer{padding:26px 0 50px;color:var(--mut);font-size:13.5px;text-align:center}
 </div></header>
 <section><div class="wrap"><h2>Abstract</h2><p class="lead">Standard 3D Gaussian Splatting assumes a pinhole camera, so it breaks on the cameras that matter for Earth observation. Sat-Splat-Distort derives the exact projection Jacobian in closed form for four non-pinhole camera models and validates each numerically against <code>torch.autograd</code>, then adds a learned distortion-prior grid for residual lens noise.</p>
   <div class="callout warn"><b>Honest scope.</b> The genuine, tested contribution is the <b>four closed-form camera Jacobians</b> (each validated against autograd) and the <b>learned distortion-prior grid</b> module. The full GPU 3DGS fit uses a forked CUDA rasterizer that is loaded lazily and <b>stubbed for CPU smoke</b>; the README PSNR numbers (e.g. 24.2 on DFC2019) are <b>leaderboard targets, not reproduced</b>.</div></div></section>
-<section><div class="wrap"><h2>Architecture</h2><div class="fig"><svg viewBox="0 0 920 300" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sat-Splat-Distort architecture"><style>
-.b{fill:#fff;stroke:#e6eaf0;stroke-width:1.5}
-.t{font-family:Montserrat,system-ui,sans-serif;font-size:13px;fill:#16202c}
-.s{font-family:'Noto Sans',system-ui,sans-serif;font-size:10.5px;fill:#5b6776}
-.real{stroke:#0e9f6e;stroke-width:2}
-.stub{stroke:#b45309;stroke-dasharray:5 4;stroke-width:2}
-.ar{stroke:#5b6776;stroke-width:1.6;fill:none;marker-end:url(#a)}
-.lg{font-family:'Noto Sans',system-ui,sans-serif;font-size:10.5px}
-</style>
-<defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#5b6776"/></marker></defs>
-<rect class="b" x="10" y="40" width="180" height="56" rx="10"/><text class="t" x="22" y="63">Non-pinhole camera</text><text class="s" x="22" y="81">satellite / pushbroom / fisheye / 360</text>
-<rect class="b real" x="250" y="16" width="200" height="52" rx="10"/><text class="t" x="262" y="38">Closed-form Jacobian</text><text class="s" x="262" y="56">4 cameras, 7/7 autograd tests</text>
-<rect class="b real" x="250" y="84" width="200" height="52" rx="10"/><text class="t" x="262" y="106">Distortion-prior grid</text><text class="s" x="262" y="124">learned residual, CPU-runnable</text>
-<rect class="b stub" x="510" y="50" width="200" height="56" rx="10"/><text class="t" x="522" y="73">Distortion-aware rasterizer</text><text class="s" x="522" y="91">CUDA fork, stubbed for CPU</text>
-<rect class="b" x="772" y="50" width="138" height="56" rx="10"/><text class="t" x="784" y="80">3D Gaussian scene</text>
-<path class="ar" d="M190,60 C220,60 222,42 248,42"/>
-<path class="ar" d="M190,76 C220,76 222,108 248,110"/>
-<path class="ar" d="M450,42 C475,42 482,74 508,78"/>
-<path class="ar" d="M450,110 C475,110 482,82 508,80"/>
-<path class="ar" d="M710,78 L770,78"/>
-<text class="s" x="250" y="170">benchmark numbers (PSNR on DFC2019) are leaderboard targets, not reproduced</text>
-<text class="lg" x="14" y="288" fill="#0e9f6e">green = real and tested</text><text class="lg" x="210" y="288" fill="#b45309">dashed amber = stub / target (off-the-shelf or roadmap)</text></svg>
+<section><div class="wrap"><h2>Architecture</h2><div class="fig"><svg viewBox="0 0 1120 322" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sat-Splat-Distort architecture"><defs>
+<marker id="ah" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto"><path d="M0,0 L11,5 L0,10 z" fill="#202733"/></marker>
+</defs>
+<style>
+svg text{font-family:'Noto Sans',system-ui,-apple-system,sans-serif;}
+.box{fill:#fff;stroke:#aebbd0;stroke-width:1.5;}
+.acc{fill:#eaf3fd;stroke:#1772d0;stroke-width:1.5;}
+.grn{fill:#e6f7ed;stroke:#0f766e;stroke-width:1.5;}
+.amb{fill:#fff6e6;stroke:#e7b66a;stroke-width:1.5;stroke-dasharray:6 4;}
+.lane{fill:#f3f6fc;stroke:#aebbd0;stroke-width:1.5;}
+.ttl{font-size:16px;font-weight:700;fill:#0e1117;font-family:'Montserrat','Noto Sans',sans-serif;}
+.sub{font-size:12.5px;font-weight:500;fill:#1b2230;}
+.ar{stroke:#202733;stroke-width:2.2;fill:none;marker-end:url(#ah);}
+.lg{font-size:12px;}
+</style><rect class="box" x="28" y="52" width="177.6" height="92" rx="11"/><text class="ttl" x="117" y="94" text-anchor="middle">Non-pinhole cameras</text><text class="sub" x="117" y="112" text-anchor="middle">RPC / pushbroom / fisheye / 360</text><rect class="grn" x="249.6" y="52" width="177.6" height="92" rx="11"/><text class="ttl" x="338" y="94" text-anchor="middle">Distortion-aware projection</text><text class="sub" x="338" y="112" text-anchor="middle">closed-form analytic Jacobians</text><rect class="box" x="471.2" y="52" width="177.6" height="92" rx="11"/><text class="ttl" x="560" y="94" text-anchor="middle">3D Gaussian splatting</text><text class="sub" x="560" y="112" text-anchor="middle">rasterizer</text><rect class="amb" x="692.8" y="52" width="177.6" height="92" rx="11"/><text class="ttl" x="782" y="94" text-anchor="middle">Learned distortion prior</text><text class="sub" x="782" y="112" text-anchor="middle">token grid (target)</text><rect class="box" x="914.4" y="52" width="177.6" height="92" rx="11"/><text class="ttl" x="1003" y="94" text-anchor="middle">Novel-view synthesis</text><text class="sub" x="1003" y="112" text-anchor="middle">rendered views</text><line class="ar" x1="205.6" y1="98.0" x2="249.6" y2="98.0"/><line class="ar" x1="427.2" y1="98.0" x2="471.2" y2="98.0"/><line class="ar" x1="648.8" y1="98.0" x2="692.8" y2="98.0"/><line class="ar" x1="870.4" y1="98.0" x2="914.4" y2="98.0"/><rect x="28" y="196" width="1064" height="84" rx="12" fill="#fff6e6" stroke="#e7b66a" stroke-width="1.5"/><text x="48" y="224" style="font-size:15px;font-weight:700;fill:#0e1117;font-family:Montserrat,sans-serif">Honest scope</text><text x="48" y="246" class="sub">Analytic Jacobians for all 4 camera models validated against torch.autograd to ~1e-5 relative error (20 tests).</text><text x="48" y="266" class="sub">Learned distortion-prior token grid and the IEEE GRSS DFC2019 multi-view PSNR benchmark are the next step (target).</text><text class="lg" x="28" y="304" fill="#0f766e">green = real and tested</text><text class="lg" x="228" y="304" fill="#b45309">dashed amber = off-the-shelf / target</text><text class="lg" x="498" y="304" fill="#1772d0">blue = learned / core method</text></svg>
 <div class="figcap">Green = real and tested; dashed amber = stub or target (off-the-shelf or roadmap).</div></div></div></section>
 <section><div class="wrap"><h2>What is real vs scaffold</h2><table><thead><tr><th>Component</th><th>Status</th></tr></thead><tbody><tr><td>4 camera project + analytic Jacobian</td><td><span class="ok">Real</span> &middot; Real, pure PyTorch, differentiable</td></tr><tr><td>Analytic-vs-autograd validation</td><td><span class="ok">Real</span> &middot; Real, passing (part of 20/20 tests)</td></tr><tr><td>DistortionPriorGrid module</td><td><span class="ok">Real</span> &middot; Real, CPU-runnable forward</td></tr><tr><td>CUDA rasterizer fork</td><td><span class="scaf">Scaffold/Target</span> &middot; Forked, lazy-loaded, stubbed for CPU</td></tr><tr><td>Trained checkpoints, PSNR 24.2</td><td><span class="scaf">Scaffold/Target</span> &middot; Target, not reproduced</td></tr></tbody></table></div></section>
 <section><div class="wrap"><h2>Validated output</h2><div class="callout"><b>20/20 tests pass</b> (run live). <b>Reproduced number:</b> the analytic camera Jacobians match <code>torch.autograd</code> to <b>~1e-5 relative error</b> (equirectangular ~1.8e-6, fisheye ~1.0e-5), the closed-form correctness claim is reproduced, not asserted. Full output in <a href="https://github.com/arunshar/sat-splat-distort/blob/main/docs/EVIDENCE.md">docs/EVIDENCE.md</a>.</div>
